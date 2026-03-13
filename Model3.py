@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pickle
+import json
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
@@ -90,6 +91,7 @@ class EnhancedDecisionTreeRegressor:
 # Enhanced Random Forest Regressor
 class EnhancedRandomForestRegressor:
     def __init__(self, n_trees=50, max_depth=10, min_samples_split=5, max_features='sqrt', bootstrap_ratio=0.8):
+        np.random.seed(7)
         self.n_trees = n_trees
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -161,6 +163,20 @@ def preprocess_data(data):
     return data, label_encoders
 
 
+def build_feature_matrix(processed_data):
+    # Production is not available at inference time and leaks target information.
+    excluded_columns = ['Yield', 'Year', 'Production(Tonne)']
+    return processed_data.drop(columns=excluded_columns, errors='ignore')
+
+
+def save_model_artifacts(model, feature_columns):
+    with open('enhanced_random_forest_regressor.pkl', 'wb') as model_file:
+        pickle.dump(model, model_file)
+
+    with open('model_metadata.json', 'w', encoding='utf-8') as metadata_file:
+        json.dump({'feature_columns': list(feature_columns)}, metadata_file, indent=2)
+
+
 # Plotting Metrics
 def plot_metrics(y_test, y_pred):
     residuals = y_test - y_pred
@@ -191,7 +207,7 @@ def main():
     data = pd.read_csv("final_data.csv")
     processed_data, label_encoders = preprocess_data(data)
 
-    X = processed_data.drop(columns=['Yield', 'Year'])
+    X = build_feature_matrix(processed_data)
     y = processed_data['Yield'].values
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -210,8 +226,7 @@ def main():
         if choice == '1':
             rf = EnhancedRandomForestRegressor()
             rf.fit(X_train, y_train)
-            with open('enhanced_random_forest_regressor.pkl', 'wb') as model_file:
-                pickle.dump(rf, model_file)
+            save_model_artifacts(rf, X.columns)
             print("Model trained and saved successfully!")
 
         elif choice == '2':

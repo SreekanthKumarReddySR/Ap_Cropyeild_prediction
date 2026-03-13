@@ -1,0 +1,12 @@
+{
+  "feature_columns": [
+    "Crop",
+    "District",
+    "Season",
+    "Area",
+    "Annual_Temp",
+    "Fertilizer",
+    "Annual_Rainfall",
+    "Rainfall_Fertilizer"
+  ]
+}
