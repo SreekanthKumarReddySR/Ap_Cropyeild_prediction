@@ -1,3 +1,4 @@
+import __main__
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request
@@ -5,6 +6,11 @@ import pickle
 from sklearn.preprocessing import LabelEncoder
 from Model3 import EnhancedRandomForestRegressor
 from Model3 import EnhancedDecisionTreeRegressor
+
+# The bundled pickle was created when Model3.py was run as a script, so the
+# stored class path points to __main__. Re-register the classes before loading.
+__main__.EnhancedRandomForestRegressor = EnhancedRandomForestRegressor
+__main__.EnhancedDecisionTreeRegressor = EnhancedDecisionTreeRegressor
 
 # Load the saved model and label encoders
 with open('enhanced_random_forest_regressor.pkl', 'rb') as model_file:
